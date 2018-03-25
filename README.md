@@ -18,13 +18,13 @@ The script is primarily intended to be integrated into a larger setup, where it 
 If you use a masternode management script of sorts, you might want to add this script to its loop or callback method, passing the appropriate values available there to this script as you're calling it from there.
 
 Example usage:
-*mnchecker --currency-handle="innova" --currency-bin-cli="innova-cli" --currency-bin-daemon="innovad" --currency-datadir="/home/user/masternodes/innova/kardakhim/data"*
+*mnchecker --currency-handle="innova" --currency-bin-cli="innova-cli" --currency-bin-daemon="innovad" --currency-datadir="/root/.innovacore"*
 
 Keep in mind: If you want to execute a file in your current working directory, you'd want to prefix the filename with "./". For the above example, that would mean "./mnchecker" instead of "mnchecker". The example makes the generic assumption that "mnchecker" has been added to or linked into a directory that is globally being searched whenever you type in a command (because it is being referenced in the $PATH variable), such as /usr/local/bin, for example.
 
 The most straightforward way to automate the recurring execution of the script would be crontab (which you can edit using the following command: *crontab -e*). To execute the above example mnchecker usage command, you'd put the following line into your crontab:
 
-\*/30 \* \* \* \* /usr/local/bin/mnchecker --currency-handle="innova" --currency-bin-cli="innova-cli" --currency-bin-daemon="innovad" --currency-datadir="/home/user/masternodes/innova/kardakhim/data" >/dev/null 2>&1
+\*/30 \* \* \* \* /usr/local/bin/mnchecker --currency-handle="innova" --currency-bin-cli="innova-cli" --currency-bin-daemon="innovad" --currency-datadir="/root/.innovacore" >/dev/null 2>&1
 
 NOTE: The script features a command that lets you generate a crontab line: Just add *--gen-crontab* to it, and instead of running, it'll generate a line for you. You'll then have to copy that line into your crontab (all on one line). WARNING: That feature is new. Be observant upon using it.
 
