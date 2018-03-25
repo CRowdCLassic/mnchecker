@@ -122,7 +122,7 @@ explorerQueryInterval = 300
 #==========================================================
 # Maximum block difference between the wallet's and the explorer's block count
 # for the wallet's block count being considered healthy.
-defaultThreshold = 3
+defaultThreshold = 10
 
 #==========================================================
 # Maximum number of blocks the explorer may be behind the wallet
