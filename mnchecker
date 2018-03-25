@@ -49,10 +49,10 @@ userDirName = ".mnchecker"
 
 #==========================================================
 # Currency defaults
-defaultCurrencyHandle = "vivo"
-defaultCliBin = "/usr/local/bin/vivo-cli"
-defaultDaemonBin = "/usr/local/bin/vivod"
-defaultDataDir = os.path.join(os.path.abspath(os.path.expanduser("~")), ".vivocore")
+defaultCurrencyHandle = "innova"
+defaultCliBin = "/usr/local/bin/innova-cli"
+defaultDaemonBin = "/usr/local/bin/innovad"
+defaultDataDir = os.path.join(os.path.abspath(os.path.expanduser("~")), ".innovacore")
 
 #==========================================================
 # Explorer URL
@@ -60,12 +60,7 @@ defaultDataDir = os.path.join(os.path.abspath(os.path.expanduser("~")), ".vivoco
 #=============================
 # chainz.cryptoid.info
 # NOTE: For this explorer, you'll have to set the user agent to "Mozilla/5.0" further below.
-defaultBlockExplorerBlockCountUrlTemplate = "http://chainz.cryptoid.info/{currencyHandle}/api.dws?q=getblockcount"
-
-#=============================
-# vivo.explorerz.top:3003
-# NOTE: This explorer seems to be derelict (date of notice: February 19, 2018)
-#defaultBlockExplorerBlockCountUrlTemplate = "http://{currencyHandle}.explorerz.top:3003/api/getblockcount"
+defaultBlockExplorerBlockCountUrlTemplate = "http://explorer.innovacoin.info/api/getblockcount"
 
 #=============================
 # User Agent (e.g. if, for some reason, the web API's web server got misconfigured and blocks urllib)
@@ -82,7 +77,7 @@ blockCountFixLockFileName = ".blockCountFixInProgress"
 # Logging
 logFileEnding = ".log"
 logFileNameFormat = "{currencyHandle}_{currencyDataDir}{ending}"
-defaultLogDirPath = os.path.join(os.path.abspath(\
+defaultLogDirPath = os.path.join(os.path.abspath( \
 	os.path.expanduser("~")), ".local", "share", "mnchecker", "logs")
 defaultLogLevel = logging.DEBUG
 defaultLogFormat = "%(message)s"
@@ -196,7 +191,7 @@ _string_fileLoggingCouldntBeInitialized_ = ""
 
 #==========================================================
 class Namespace (argparse.Namespace):
-	
+
 	#=============================
 	"""Pure namespace class.
 	Basically serves as a dot-notation oriented dict.
@@ -233,17 +228,17 @@ class FancyErrorMessage(object):
 	def __init__(self, message, title=""):
 		decorTop = "[MNCHECKER ERROR]{title}".format(title=title)
 		decorBottom = "[MNCHECKER ERROR]"
-		self.string = "{eol}{decorTop}{eol}{message}{eol}{decorBottom}"\
+		self.string = "{eol}{decorTop}{eol}{message}{eol}{decorBottom}" \
 			.format(eol=os.linesep, decorTop=decorTop, message=message, decorBottom=decorBottom)
 		__repr__ = self.string
 
 #==========================================================
 class ErrorCodes(Namespace):
-	
+
 	#=============================
 	"""Namespace class to configure error codes for execeptions."""
 	#=============================
-	
+
 	pass
 
 #==========================================================
@@ -252,11 +247,11 @@ class ErrorCodes(Namespace):
 
 #==========================================================
 class Error(Exception):
-	
+
 	#=============================
 	"""Exception with a fancy error message."""
 	#=============================
-	
+
 	def __init__(self, message):
 		super().__init__(FancyErrorMessage(message).string)
 
@@ -265,7 +260,7 @@ class ErrorCodeError(Error):
 
 #==========================================================
 class ErrorWithCodes(Error):
-	
+
 	#=============================
 	"""Error with an error code for the 'errno' constructor parameter.
 	The possible error numbers are to be configured as class variables of the
@@ -275,30 +270,30 @@ class ErrorWithCodes(Error):
 	value anywhere except when defining the class variable referencing it.
 	The convention is to use all upper case variable names for these."""
 	#=============================
-	
+
 	codes = ErrorCodes()
-	
+
 	def __init__(self, message, code):
 		self.code = code
 		super().__init__(message)
-	
+
 	@property
 	def codeNames(self):
 		"""Returns a list of all code names associated with this error."""
 		return self.__dict__.keys()
-	
+
 	@property
 	def codeName(self):
 		"""The code name for this error."""
 		self.getNameByCode(self.code)
-		raise ErrorCodeError(\
-			"The following error code couldn't be resolved: \"{code}\". Available error codes:\n{codeList}"\
-			.format(code=code, codeList=self.codeNames))
-	
+		raise ErrorCodeError( \
+			"The following error code couldn't be resolved: \"{code}\". Available error codes:\n{codeList}" \
+				.format(code=code, codeList=self.codeNames))
+
 	def getCodeByName(self, name):
 		"""Return the error code that matches the specified code name."""
 		return self.codes.__dict__[name]
-	
+
 	def getNameByCode(self, code):
 		"""Takes an error code and returns its (variable) name.
 		This is a reverse dictionary lookup by the code for the name of the codes namespace object.
@@ -339,11 +334,11 @@ class FileError(ErrorWithCodes):
 
 #==========================================================
 class Currency(object):
-	
+
 	#=============================
 	"""Represents the wallet's currency."""
 	#=============================
-	
+
 	def __init__(self, handle):
 		self.handle = handle
 
@@ -381,11 +376,11 @@ class Process(object):
 
 #==========================================================
 class BatchPathExistenceCheckPath(object):
-	
+
 	#=============================
 	"""Pairs a path with an existence-check and an error message to use if it doesn't exist."""
 	#=============================
-	
+
 	def __init__(self, path, errorMessage):
 		self.path = path
 		self.errorMessage = errorMessage
@@ -405,55 +400,55 @@ class BatchPathExistenceCheckPath(object):
 
 #==========================================================
 class BatchPathExistenceCheck(object):
-	
+
 	#=============================
 	"""Takes path+errorMessage pairs and checks whether they exist, with an optional error raised.
 	Raising the optional error is the default behaviour and needs to be disabled if
 	that is undesired."""
 	#=============================
-	
+
 	def __init__(self):
 		self.paths = []
 		self.batchErrorMessage = ""
 		self.nonExistentPathCount = 0
-	
+
 	def addPath(self, path, errorMessage):
 		self.paths.append(BatchPathExistenceCheckPath(path, errorMessage))
-	
+
 	def checkAll(self, autoRaiseError=True):
 		for path in self.paths:
 			if not path.exists():
 				self.nonExistentPathCount += 1
-				self.batchErrorMessage\
-					= "{batchErrorMessage}\n{errorMessage}".format(\
+				self.batchErrorMessage \
+					= "{batchErrorMessage}\n{errorMessage}".format( \
 					batchErrorMessage=self.batchErrorMessage, errorMessage=path.errorMessage)
 		if autoRaiseError:
 			self.raiseErrorIfNonExistentPathFound()
-	
+
 	def raiseErrorIfNonExistentPathFound(self):
 		if self.nonExistentPathCount > 0:
 			self.raiseError()
-	
+
 	def raiseError(self):
 		if self.batchErrorMessage == "":
 			raise PathNotFoundError("Error: No non-existent paths found, but error was raised anyway.")
 		elif self.nonExistentPathCount == 1:
-			raise PathNotFoundError(\
-				"Error: The following path doesn't exist:{batchErrorMessage}".format(\
+			raise PathNotFoundError( \
+				"Error: The following path doesn't exist:{batchErrorMessage}".format( \
 					batchErrorMessage=self.batchErrorMessage))
 		elif self.nonExistentPathCount > 1:
-			raise PathNotFoundError(\
-				"Error: The following paths don't exist:{batchErrorMessage}".format(\
+			raise PathNotFoundError( \
+				"Error: The following paths don't exist:{batchErrorMessage}".format( \
 					batchErrorMessage=self.batchErrorMessage))
-			
+
 
 #==========================================================
 class Wallet(object):
-	
+
 	#=============================
 	"""Represents everything this script needs related to a bitcoin derived wallet."""
 	#=============================
-	
+
 	def __init__(self, currency, cliBinPath, daemonBinPath, confFilePath, dataDirPath):
 		self.currency = currency
 		self.cliBinPath = cliBinPath
@@ -462,40 +457,40 @@ class Wallet(object):
 		self.dataDirPath = dataDirPath
 		# Check path sanity.
 		batchPathExistenceCheck = BatchPathExistenceCheck()
-		batchPathExistenceCheck.addPath(self.cliBinPath, "cli-bin path: {path}".format(\
+		batchPathExistenceCheck.addPath(self.cliBinPath, "cli-bin path: {path}".format( \
 			path=self.cliBinPath))
-		batchPathExistenceCheck.addPath(self.daemonBinPath, "daemon-bin path: {path}".format(\
+		batchPathExistenceCheck.addPath(self.daemonBinPath, "daemon-bin path: {path}".format( \
 			path=self.daemonBinPath))
-		batchPathExistenceCheck.addPath(self.dataDirPath, "datadir path: {path}".format(\
+		batchPathExistenceCheck.addPath(self.dataDirPath, "datadir path: {path}".format( \
 			path=self.dataDirPath))
 		if not self.confFilePath == None:
 			# A conf file path got specified; check too.
-			batchPathExistenceCheck.addPath(self.confFilePath, "conf-file path: {path}".format(\
+			batchPathExistenceCheck.addPath(self.confFilePath, "conf-file path: {path}".format( \
 				path=self.confFilePath))
 		batchPathExistenceCheck.checkAll()
-		# All paths are dandy, nice!
+	# All paths are dandy, nice!
 
 	def runCli(self, commandLine):
 		"""Run the command line version of the wallet with a list of command line arguments."""
 		if not self.confFilePath == None:
-			return Process([self.cliBinPath,\
-				"-datadir={datadir}".format(datadir=self.dataDirPath),\
-				"-conf={confFilePath}".format(confFilePath=self.confFilePath)] + commandLine)
+			return Process([self.cliBinPath, \
+							"-datadir={datadir}".format(datadir=self.dataDirPath), \
+							"-conf={confFilePath}".format(confFilePath=self.confFilePath)] + commandLine)
 		else:
-			return Process([self.cliBinPath,\
-				"-datadir={datadir}".format(datadir=self.dataDirPath)] + commandLine)
+			return Process([self.cliBinPath, \
+							"-datadir={datadir}".format(datadir=self.dataDirPath)] + commandLine)
 
 	def runDaemon(self, commandLine):
 		"""Run the daemon. Takes a list for command line arguments to it."""
 		if not self.confFilePath == None:
-			return Process([self.daemonBinPath,\
-				"-daemon",\
-				"-datadir={datadir}".format(datadir=self.dataDirPath),\
-				"-conf={confFilePath}".format(confFilePath=self.confFilePath)] +commandLine)
+			return Process([self.daemonBinPath, \
+							"-daemon", \
+							"-datadir={datadir}".format(datadir=self.dataDirPath), \
+							"-conf={confFilePath}".format(confFilePath=self.confFilePath)] +commandLine)
 		else:
-			return Process([self.daemonBinPath,\
-				"-daemon",\
-				"-datadir={datadir}".format(datadir=self.dataDirPath)] +commandLine)
+			return Process([self.daemonBinPath, \
+							"-daemon", \
+							"-datadir={datadir}".format(datadir=self.dataDirPath)] +commandLine)
 
 	def runCliSafe(self, commandLine, _retrying=False):
 		"""A version of .runCli that checks for the wallet tripping up and responds accordingly."""
@@ -504,23 +499,23 @@ class Wallet(object):
 		# Catch the wallet taking the way out because the daemon isn't running.
 		if stderrString.decode().strip() == "error: couldn't connect to server":
 			print("[DEBUG Wallet.runCliSafe WalletError: ]", WalletError.__dict__)
-			raise WalletError(\
-				"Command line wallet can't connect to the daemon. Is the daemon running?\n{info}"\
-				.format(info="Wallet paths:\n\tcli: {cli}\n\tdaemon: {daemon}\n\tdatadir: {datadir}"\
-					.format(cli=self.cliBinPath, daemon=self.daemonBinPath, datadir=self.dataDirPath)),\
+			raise WalletError( \
+				"Command line wallet can't connect to the daemon. Is the daemon running?\n{info}" \
+					.format(info="Wallet paths:\n\tcli: {cli}\n\tdaemon: {daemon}\n\tdatadir: {datadir}" \
+							.format(cli=self.cliBinPath, daemon=self.daemonBinPath, datadir=self.dataDirPath)), \
 				WalletError.codes.RPC_CONNECTION_FAILED)
 		# Catch issues caused by the wallet connecting to the daemon right after the daemon started.
 		# As this involves retrying, we have to make sure we don't get stuck retrying forever.
-		if "error code: -28" in stdoutString.decode()\
-			or "error code: -28" in stderrString.decode()\
-			and not _retrying:
+		if "error code: -28" in stdoutString.decode() \
+				or "error code: -28" in stderrString.decode() \
+						and not _retrying:
 			# Rerun this method in intervals until it works, or we decide to give up.
 			for retry in range(1,16):
 				time.sleep(5)
 				retriedProcess = self.runCliSafe(commandLine, _retrying=True)
 				retriedStdoutString, retriedStderrString = retriedProcess.waitAndGetOutput()
-				if "error code: -28" in retriedStdoutString.decode()\
-					or "error code: -28" in retriedStderrString.decode():
+				if "error code: -28" in retriedStdoutString.decode() \
+						or "error code: -28" in retriedStderrString.decode():
 					continue
 				else:
 					return retriedProcess
@@ -556,8 +551,8 @@ class Wallet(object):
 		return process
 
 	def deleteBlockchainData(self):
-		for fileName in ["blocks", "chainstate", "database", "mncache.dat", "peers.dat",\
-			"mnpayments.dat", "banlist.dat"]:
+		for fileName in ["blocks", "chainstate", "database", "mncache.dat", "peers.dat", \
+						 "mnpayments.dat", "banlist.dat"]:
 			filePath = os.path.join(self.dataDirPath, fileName)
 			try:
 				if os.path.exists(filePath):
@@ -573,74 +568,74 @@ class Wallet(object):
 		blockCount = stdout.decode()
 		if not stderr.decode() == "":
 			print("stderr ", stderr.decode(), "||", stdout.decode())
-			raise WalletError(\
-				"The wallet produced an error when running \"getblockcount\":\n {error}"\
+			raise WalletError( \
+				"The wallet produced an error when running \"getblockcount\":\n {error}" \
 					.format(error=stderr.decode()), WalletError.codes.CLI_ERROR)
 		return int(blockCount)
 
 #==========================================================
 class File(object):
-	
+
 	#=============================
 	"""Basic file wrapper.
 	Abstracts away basic operations such as read, write, etc."""
 	#TODO: Make file operations safer and failures more verbose with some checks & exceptions.
 	#=============================
-	
+
 	def __init__(self, path, make=False, makeDirs=False, runSetup=True):
 		if runSetup:
 			self.setUp(path, make, makeDirs)
-	
+
 	def setUp(self, path, make=False, makeDirs=False):
 		"""Initialize the file. This can be called subsequently to reset which file is being handled."""
 		self.path = path
 		if not type(self.path) == str:
-			raise FileError("Tried to initialize file with non-string path: {path}".format(path=self.path),\
-				FileError.codes.INVALID_PATH)
+			raise FileError("Tried to initialize file with non-string path: {path}".format(path=self.path), \
+							FileError.codes.INVALID_PATH)
 		self.dirPath, self.name = self.path.rpartition(os.sep)[0::2]
 		if make:
 			if not self.exists:
 				self.make(makeDirs=makeDirs)
-		
+
 	@property
 	def lastModified(self):
 		return int(os.path.getmtime(self.path))
-	
+
 	@property
 	def secondsSinceLastModification(self):
 		return int(time.time()) - int(self.lastModified)
-	
+
 	@property
 	def exists(self):
 		return os.path.exists(self.path)
-	
+
 	@property
 	def dirExists(self):
 		return os.path.exists(self.dirPath)
-	
+
 	@property
 	def size(self):
 		return os.path.getsize(self.path)
-	
+
 	def overwrite(self, data):
 		with open(self.path, "w") as fileHandler:
 			fileHandler.write(data)
-			
+
 	def append(self, data):
 		with open(self.path, "a") as fileHandler:
 			fileHandler.write(data)
-	
+
 	def read(self):
 		with open(self.path, "r") as fileHandler:
 			return fileHandler.read()
-	
+
 	def delete(self):
 		"""Deletes the file from the filesystem."""
 		os.remove(self.path)
 	def wipe(self):
 		"""Wipes the content of the file, making it empty."""
 		self.overwrite("")
-		
+
 	def move(self, newPath):
 		"""Moves the file to a new path."""
 		if os.path.isdir(newPath):
@@ -648,15 +643,15 @@ class File(object):
 		else:
 			os.rename(self.path, newPath)
 		self.setUp(newPath)
-	
+
 	def copy(self, destPath):
 		"""Copy this file to another path."""
 		shutil.copy(self.path, destPath)
-	
+
 	def rename(self, newName):
 		"""Rename the file (this doesn't change the location of the file, just the name)."""
 		self.move(os.path.join(self.dirPath, newName))
-	
+
 	def make(self, makeDirs=False):
 		"""Write empty file to make sure it exists."""
 		if not self.exists:
@@ -666,7 +661,7 @@ class File(object):
 			self.overwrite("")
 
 class LogFile(File):
-	
+
 	#=============================
 	"""A File class with features geared towards logging as required by the Log class.
 	Supports log rotation (custom implementation)."""
@@ -678,28 +673,28 @@ class LogFile(File):
 	# TODO: This is going to be a bit of a cracker: What if a WatchedFileHandler in another
 	# process performs a delayed write during or after a rotation?
 	# Perhaps I'm better off implementing a wrapper around logrotate or whatever. <,<°
-	
-	def __init__(self, path, make=False, makeDirs=False, dateTimeFormat="%d-%m-%Y_%H:%M:%S",\
-		maxSize=1048576, maxRotations=2, rotation=None, runSetup=True):
+
+	def __init__(self, path, make=False, makeDirs=False, dateTimeFormat="%d-%m-%Y_%H:%M:%S", \
+				 maxSize=1048576, maxRotations=2, rotation=None, runSetup=True):
 		super().__init__(path, make, makeDirs, runSetup=False)
 		super().setUp(path, make, makeDirs)
-		
+
 		# Basic parameters.
 		self.dateTimeFormat = dateTimeFormat
 		self.maxSize = maxSize
 		self.maxRotations = maxRotations
-		
+
 		# Basic values.
 		self.rotationSuffixIdentifierPrefix = ".old"
 		self.rotationSuffixIdentifierFormat = "{prefix}{rotation}"
 		self.nameElementSeparator = "_"
 		self.rotatedSuffixFormat = "{identifier}{separator}{date}"
-		
+
 		# The rest of the initialization is tied to the actual file we're managing,
 		# so it's been moved to an overriden .setUp method.
 		if runSetup:
 			self.setUp(path, make, makeDirs, rotation)
-		
+
 	def setUp(self, path, make=False, makeDirs=False, rotation=None):
 		# Initialization through auxiliary methods which will depend on above basics.
 		# Don't change the order of these methods willy nilly: Some depend on former calls.
@@ -711,16 +706,16 @@ class LogFile(File):
 		self.nameDate = self.getNameDate()
 		self.familyNameWithIdentifier = self.getFamilyNameWithIdentifier()
 		self.familyNameWithIdentifierPrefix = self.getFamilyNameWithIdentifierPrefix()
-	
+
 	#=============================
 	# @Property Methods.
 	#=============================
-	
+
 	@property
 	def tooBig(self):
 		"""Returns 'True' if the file size exceeds the max log file size, 'False' otherwise."""
 		return self.size > self.maxSize
-		
+
 	@property
 	def rotatedLogFiles(self):
 		"""Returns a list of all past, rotated instances of this log file that currently exist.
@@ -735,23 +730,23 @@ class LogFile(File):
 			if familyName == self.familyName: # Is this our own fileName or at least a rotation?
 				# Make sure it's not our own fileName: We want rotations:
 				if not rotation is None and not rotation == 0:
-					unsortedRotatedLogFiles[rotation] =\
+					unsortedRotatedLogFiles[rotation] = \
 						LogFile(os.path.join(self.dirPath, fileName), rotation=rotation)
 		# Now, instantiate a LogFile object for each of these file names and add them to the
 		# result list in their rotation order.
 		for rotation in sorted(unsortedRotatedLogFiles.keys()):
 			rotatedLogFiles.append(unsortedRotatedLogFiles[rotation])
 		return rotatedLogFiles
-	
+
 	@property
 	def logFileFamily(self):
 		"""Retrns a list with this log file at index 0 and all rotated log files after."""
 		return [self]+self.rotatedLogFiles
-	
+
 	@property
 	def nextRotationName(self):
 		"""The name this file would have once it's rotated once more."""
-		if self.active: 
+		if self.active:
 			date = datetime.datetime.now().strftime(self.dateTimeFormat)
 		else:
 			date = self.nameDate
@@ -790,13 +785,13 @@ class LogFile(File):
 
 	def getIdentifier(self):
 		"""Returns the identifier portion of this file's name."""
-		return self.rotationSuffixIdentifierFormat.format(\
+		return self.rotationSuffixIdentifierFormat.format( \
 			prefix=self.rotationSuffixIdentifierPrefix, rotation=self.rotation)
 
 	def getNameDateSuffix(self):
 		"""Returns the date suffix. If there is none, the return value should be an empty string."""
 		return self.name.rpartition(self.identifier)[2]
-	
+
 	def getNameDate(self):
 		"""Returns the date portion of the name without the separator."""
 		return self.nameDateSuffix.partition(self.nameElementSeparator)[2]
@@ -820,9 +815,9 @@ class LogFile(File):
 	def getFamilyNameWithIdentifierPrefix(self):
 		"""Returns the family name and the identifier prefix portion (no rotation ID included)
 		of this file's name."""
-		return "{name}{identifierPrefix}"\
+		return "{name}{identifierPrefix}" \
 			.format(name=self.familyName, identifierPrefix=self.rotationSuffixIdentifierPrefix)
-	
+
 	def getFamilynNameAndRotationFromFileName(self, fileName):
 		"""Returns the familyName portion and the rotation value in the given fileName.
 		'rotation' is 'None' if there is no rotation value at the beginning of the suffix portion.
@@ -850,23 +845,23 @@ class LogFile(File):
 			except (IndexError, ValueError) as error:
 				rotation = None
 		return familyName, rotation
-	
+
 	#=============================
 	# Normal methods.
 	#=============================
-	
+
 	def isRelatedByName(self, fileName):
 		"""Returns 'True' if #TODO""" #TODO: Document.
 		if fileName.startswith(self.familyNameWithIdentifierPrefix):
 			return True
 		else:
 			return False
-	
+
 	def rotateFamily(self):
 		"""Rotates the log file as well as all already rotated versions."""
 		for logFile in self.logFileFamily[::-1]:
 			logFile.rotate()
-		
+
 	def rotate(self):
 		"""Copies this log file to a new file and deletes the content of the original."""
 		newPath = os.path.join(self.dirPath, self.nextRotationName)
@@ -875,30 +870,30 @@ class LogFile(File):
 		except (FileNotFoundError, PermissionError, OSError, IOError):
 			# It's more important to keep the filesystem from filling
 			# than to preserve the mnchecker log file.
-			raise FileError("Attempted rotating \"{path}\" to \"{newPath}\"."\
-				.format(path=self.path, newPath=newPath), FileError.codes.SYSTEM_FAILURE)
+			raise FileError("Attempted rotating \"{path}\" to \"{newPath}\"." \
+							.format(path=self.path, newPath=newPath), FileError.codes.SYSTEM_FAILURE)
 		self.delete()
-	
+
 	def generateRotatedLogFileNameWithIdentifier(self, rotation):
 		"""Generate a version of our family name with an identifier with the specified rotation, but no date."""
-		return "{name}{identifier}".format(name=self.familyName,\
-			identifier=self.rotationSuffixIdentifierFormat.format(\
-				prefix=self.rotationSuffixIdentifierPrefix, rotation=rotation))
-	
+		return "{name}{identifier}".format(name=self.familyName, \
+										   identifier=self.rotationSuffixIdentifierFormat.format( \
+											   prefix=self.rotationSuffixIdentifierPrefix, rotation=rotation))
+
 	def generateRotatedLogFileNameWithDate(self, rotation, date):
 		"""Generate a version of our family name with identifier, date and all."""
-		return "{name}{suffix}"\
-			.format(name=self.familyName, suffix=self.rotatedSuffixFormat\
-				.format(identifier=self.rotationSuffixIdentifierFormat\
-					.format(prefix=self.rotationSuffixIdentifierPrefix, rotation=rotation),\
-					separator=self.nameElementSeparator, date=date))
+		return "{name}{suffix}" \
+			.format(name=self.familyName, suffix=self.rotatedSuffixFormat \
+					.format(identifier=self.rotationSuffixIdentifierFormat \
+							.format(prefix=self.rotationSuffixIdentifierPrefix, rotation=rotation), \
+							separator=self.nameElementSeparator, date=date))
 
 	def curbRotations(self):
 		"""Deletes all rotations that exceed 'self.maxRotations'."""
 		for logFile in self.rotatedLogFiles:
 			if logFile.rotation > self.maxRotations:
 				logFile.delete()
-				
+
 	def maintainRotation(self):
 		"""Rotates the log file when it gets too big and deletes superfluous rotated copies."""
 		if self.tooBig:
@@ -907,36 +902,36 @@ class LogFile(File):
 
 #==========================================================
 class BlockCountCacheFile(File):
-	
+
 	#=============================
 	"""Wrapper for the file the block explorer's block count data is cached in."""
 	#=============================
-	
+
 	def __init__(self, path):
 		super().__init__(path, make=True)
 
 #==========================================================
 class BlockCountFixLockFile(File):
-	
+
 	#=============================
 	"""Wrapper for the file used to determine whether the wallet has recently had its blockchain
 	reset by this script.
 	It's not really a traditional lock file, though: It contains time data to determine whether
 	the grace waiting period to wait for the wallet's re-sync is over yet or not."""
 	#=============================
-	
+
 	def __init__(self, dataDirPath):
 		super().__init__(os.path.join(dataDirPath, blockCountFixLockFileName), make=False)
 
 #==========================================================
 class HttpUrl(object):
-	
+
 	#=============================
 	"""Represents an HTTP url and its components.
-	In its current state, it's only geared towards separating the domain from the protocol 
+	In its current state, it's only geared towards separating the domain from the protocol
 	indicator and the rest of the address."""
 	#=============================
-	
+
 	def __init__(self, url):
 		self.url = url
 	@property
@@ -954,79 +949,79 @@ class HttpUrl(object):
 
 #==========================================================
 class BlockExplorer(object):
-	
+
 	#=============================
 	"""Represents a block explorer to the extent of its relevance in terms of block count information."""
 	#=============================
-	
+
 	def __init__(self):
 		self.name = "NONE"
-	
+
 	def queryBlockCount(self, currency):
 		"""Override this with the actual code required to get the block count from a particular block explorer."""
 		pass # Override
-	
+
 	def getBlockCount(self, currency):
 		"""Gets and caches an explorer's block count.
 		The values are read from the cache file for a period. That file is updated with fresh information
 		if this method is called and that period is exceeded."""
 		#NOTE: This method should better handle connection issues.
-		blockCountCacheFile = BlockCountCacheFile(\
-			os.path.join( blockCountCacheFileDirectoryPath,\
-			blockCountCacheFileNameTemplate.format(\
-			explorerName=self.name, currencyHandle=currency.handle)))
-		if blockCountCacheFile.secondsSinceLastModification > explorerQueryInterval\
-			or blockCountCacheFile.read() == "":
+		blockCountCacheFile = BlockCountCacheFile( \
+			os.path.join( blockCountCacheFileDirectoryPath, \
+						  blockCountCacheFileNameTemplate.format( \
+							  explorerName=self.name, currencyHandle=currency.handle)))
+		if blockCountCacheFile.secondsSinceLastModification > explorerQueryInterval \
+				or blockCountCacheFile.read() == "":
 			# Data in the cache file is old, or nothing has been written to it yet.
 			# Get updated block count data and write it to it.
 			try: # This entire handling section could use some clean up. It was slapped together hastily.
 				blockCountCacheFile.overwrite(str( self.queryBlockCount(currency)))
-			except (BlockExplorerError, ConnectionResetError) as error: 
+			except (BlockExplorerError, ConnectionResetError) as error:
 				waitTimeUntilRetry = random.randint(30,60)
-				Log("mnchecker").critical(\
-					_string_explorerConnectionFailedGoingToRetry.format(waitTimeUntilRetry=waitTimeUntilRetry),\
-						sys.exc_info())
+				Log("mnchecker").critical( \
+					_string_explorerConnectionFailedGoingToRetry.format(waitTimeUntilRetry=waitTimeUntilRetry), \
+					sys.exc_info())
 				time.sleep(waitTimeUntilRetry)
 				blockCountCacheFile.overwrite(str( self.queryBlockCount(currency)))
 		blockCountCacheValue = blockCountCacheFile.read()
 		try:
 			return int(blockCountCacheValue)
 		except ValueError as error:
-			raise BlockExplorerError("The block count cache file contains faulty data.\n\tFile path: {path}\n\tData: {data}"\
-				.format(path=blockCountCacheFile.path, data=blockCountCacheFile.read()),\
-				BlockExplorerError.codes.CACHE_INVALID) from error
+			raise BlockExplorerError("The block count cache file contains faulty data.\n\tFile path: {path}\n\tData: {data}" \
+									 .format(path=blockCountCacheFile.path, data=blockCountCacheFile.read()), \
+									 BlockExplorerError.codes.CACHE_INVALID) from error
 
 #==========================================================
 class BlockExplorerByWebApi(BlockExplorer):
-	
+
 	#=============================
 	"""BlockExplorer implementation for explorerz.top."""
 	#=============================
-	
+
 	def __init__(self, url, userAgent):
 		self.url = url
 		self.userAgent = userAgent
 		self.name = HttpUrl(self.url).domain
 	def queryBlockCount(self, currency):
 		if self.userAgent == None:
-			blockCount = urllib.request.urlopen(\
-				urllib.request.Request(self.url)\
-			).read().decode()
+			blockCount = urllib.request.urlopen( \
+				urllib.request.Request(self.url) \
+				).read().decode()
 		else:
-			blockCount = urllib.request.urlopen(\
-				urllib.request.Request(self.url, headers={"User-Agent": self.userAgent})\
-			).read().decode()
+			blockCount = urllib.request.urlopen( \
+				urllib.request.Request(self.url, headers={"User-Agent": self.userAgent}) \
+				).read().decode()
 		try:
 			int(blockCount)
 		except ValueError as error:
-			raise BlockExplorerError(\
-				"The block explorer ({name}) returned a non-integer value: {value}"\
+			raise BlockExplorerError( \
+				"The block explorer ({name}) returned a non-integer value: {value}" \
 					.format(name=self.name, value=blockCount), BlockExplorerError.codes.BLOCK_COUNT_INVALID) from error
 		return blockCount
-	
+
 #==========================================================
 class BlockExplorerBlockCountUrl(object):
-	
+
 	#=============================
 	"""A web API call URL.
 	The 'urlTemplate' and 'currencyHandle' parameters are used to assemble the API address
@@ -1034,7 +1029,7 @@ class BlockExplorerBlockCountUrl(object):
 	complete URL that will not require any assembly (probably specified on the command line), which
 	will override the assembly procedure."""
 	#=============================
-	
+
 	def __init__(self, urlTemplate, currencyHandle, completeUrl=None):
 		self.urlTemplate = urlTemplate
 		self.currencyHandle = currencyHandle
@@ -1049,7 +1044,7 @@ class BlockExplorerBlockCountUrl(object):
 			return self.urlTemplate.format(currencyHandle=self.currencyHandle)
 		else:
 			return self.completeUrl
-	
+
 #==========================================================
 class BlockCountHealth(object):
 
@@ -1071,16 +1066,16 @@ class BlockCountHealth(object):
 	@property
 	def walletChainBehind(self):
 		"""Is the wallet chain behind the explorer chain?"""
-		if self.explorer.getBlockCount(self.wallet.currency) - self.wallet.getBlockCount()\
-			>self.threshold:
+		if self.explorer.getBlockCount(self.wallet.currency) - self.wallet.getBlockCount() \
+				>self.threshold:
 			return True # Wallet chain is behind.
 		else:
 			return False # Wallet chain isn't behind, or the difference is within the configured threshold.
-		
+
 	@property
 	def walletChainAhead(self):
-		if self.wallet.getBlockCount() - self.explorer.getBlockCount(self.wallet.currency)\
-			>self.overshotThreshold:
+		if self.wallet.getBlockCount() - self.explorer.getBlockCount(self.wallet.currency) \
+				>self.overshotThreshold:
 			return True # Wallet chain is ahead.
 		else:
 			return False # Wallet chain is ahead, or the difference is within the configured threshold.
@@ -1089,8 +1084,8 @@ class BlockCountHealth(object):
 	def blockCountFixInProgress(self):
 		inProgress = False
 		if self.blockCountFixLockFile.exists:
-			if int(time.time()) - int(self.blockCountFixLockFile.read())\
-				< blockCountFixGraceTime(self.explorerBlockCount):
+			if int(time.time()) - int(self.blockCountFixLockFile.read()) \
+					< blockCountFixGraceTime(self.explorerBlockCount):
 				inProgress = True
 		return inProgress
 
@@ -1104,7 +1099,7 @@ class BlockCountHealth(object):
 
 	def maintain(self):
 		"""Check for block count health and fix if required."""
-		
+
 		# Noodles, everyone, noodles~
 		# .. @_@
 
@@ -1113,42 +1108,42 @@ class BlockCountHealth(object):
 		if self.walletChainBehind:
 			if not self.blockCountFixInProgress:
 				self.fixBlockCount()
-				Log("mnchecker").info(_string_fixed.format(\
-					walletBlockCount=self.walletBlockCount,\
-					explorerBlockCount=self.explorerBlockCount,\
+				Log("mnchecker").info(_string_fixed.format( \
+					walletBlockCount=self.walletBlockCount, \
+					explorerBlockCount=self.explorerBlockCount, \
 					threshold=self.threshold))
 			else:
 				# This message could use some additional data.
 				Log("mnchecker").info(_string_inProgress)
 		#=============================
-		# 
+		#
 		elif self.walletChainAhead:
-			Log("mnchecker").info(_string_chainSplitWarning.format(\
-				walletBlockCount=self.walletBlockCount,\
-				explorerBlockCount=self.explorerBlockCount,\
+			Log("mnchecker").info(_string_chainSplitWarning.format( \
+				walletBlockCount=self.walletBlockCount, \
+				explorerBlockCount=self.explorerBlockCount, \
 				overshotThreshold=self.overshotThreshold))
 		#=============================
-		# 
+		#
 		else: # Wallet chain isn't behind, or the difference is within configured parameters.
-			Log("mnchecker").info(_string_noFixNeeded.format(\
-				walletBlockCount=self.walletBlockCount,\
-				explorerBlockCount=self.explorerBlockCount,\
-				threshold=self.threshold,\
+			Log("mnchecker").info(_string_noFixNeeded.format( \
+				walletBlockCount=self.walletBlockCount, \
+				explorerBlockCount=self.explorerBlockCount, \
+				threshold=self.threshold, \
 				overshotThreshold=self.overshotThreshold))
 			if self.blockCountFixLockFile.exists:
-				Log("mnchecker").debug(_string_goingToDeleteTheBlockCountFixLockFile\
-					.format(path=self.blockCountFixLockFile.path))
+				Log("mnchecker").debug(_string_goingToDeleteTheBlockCountFixLockFile \
+									   .format(path=self.blockCountFixLockFile.path))
 				try:
 					self.blockCountFixLockFile.delete()
 				except Exception as error: # No matter what happens here, we want it to go to the log.
-					
+
 					#TODO: Evaluate whether this should be consolidated with the "catch & log all"
 					# procedure this method is wrapped in anyway at this point.
-					
+
 					# If we get here, something's seriously wrong. Perhaps something or someone
 					# fudged with permissions since we created the lock file?
-					Log("mnchecker").critical(_string_failedDeletingBlockCountFixLockFile\
-						.format(path=self.blockCountFixLockFile.path, error=error))
+					Log("mnchecker").critical(_string_failedDeletingBlockCountFixLockFile \
+											  .format(path=self.blockCountFixLockFile.path, error=error))
 					raise error # We want to be as loud and verbose as possible. We shouldn't be here!
 				Log("mnchecker").debug(_string_blockCountFixLockFileDeletedSuccessfully)
 			else:
@@ -1161,7 +1156,7 @@ class ErrorType(object):
 	as needed."""
 	def __init__(self, errorClass):
 		self.errorClass = errorClass
-		
+
 	@property
 	def name(self):
 		return self.errorClass.__name__
@@ -1176,39 +1171,39 @@ class ErrorTraceback(object):
 		self.asString = "".join(self.asList)
 #==========================================================
 class ErrorInfo(object):
-	
+
 	#=============================
 	"""Holds information about an error. Designed to take the return value of *sys.exc_info()."""
 	#=============================
-	
+
 	def __init__(self, errorClass, message, errorTraceback):
 		self.errorType = ErrorType(errorClass)
 		self.message = message
 		self.traceback = ErrorTraceback(errorTraceback)
-		
+
 	@property
 	def asString(self):
-		return "Traceback (most recent call last):\n{traceback}\n{name}: {message}"\
+		return "Traceback (most recent call last):\n{traceback}\n{name}: {message}" \
 			.format(traceback=self.traceback.asString, name=self.errorType.name, message=self.message)
 
 #==========================================================
 class Log(object, metaclass=Singleton):
-	
+
 	#=============================
 	"""Represents a logging setup for mnchecker logs.
-	As there will only be one log to be considered for each run of mnchecker, and 
+	As there will only be one log to be considered for each run of mnchecker, and
 	each call to 'logging.getLogger(name)' will return the same logging instance,
 	in order to protect against over-initializinig the same instance over and over
 	again this class is a singleton that will always return the same instance as
 	well."""
 	#=============================
-	
-	def __init__(self, name, filePath=None, logFormat=None, consoleLogFormat=None, fileLogFormat=None,\
-		logLevel=logging.DEBUG, consoleLogLevel=None, fileLogLevel=None):
-		
+
+	def __init__(self, name, filePath=None, logFormat=None, consoleLogFormat=None, fileLogFormat=None, \
+				 logLevel=logging.DEBUG, consoleLogLevel=None, fileLogLevel=None):
+
 		self.name = name
 		self.logLevel = logLevel
-		
+
 		# Apply log formats as specified.
 		self.logFormat = logFormat
 		if consoleLogFormat is None:
@@ -1219,7 +1214,7 @@ class Log(object, metaclass=Singleton):
 			self.fileLogFormat = self.logFormat
 		else:
 			self.fileLogFormat = fileLogFormat
-		
+
 		# Make sure the console and file log levels are assigned the value of
 		# 'logLevel' if no values have been specified for them.
 		if not consoleLogLevel is None:
@@ -1230,7 +1225,7 @@ class Log(object, metaclass=Singleton):
 			self.fileLogLevel = fileLogLevel
 		else:
 			self.fileLogLevel = self.logLevel
-			
+
 		# If there is no file path, we won't have a log file.
 		# It's the duty of the 'setUp' method to check this before setting up
 		# a file logger and handle this case.
@@ -1238,58 +1233,58 @@ class Log(object, metaclass=Singleton):
 			self.logFile = LogFile(filePath)
 		else:
 			self.logFile = None
-			
+
 		# Get to setting things up.
 		self.setUpBootstrapLogger()
 		self.setUp()
-		
+
 	@property
 	def logger(self):
 		return logging.getLogger(self.name)
-	
+
 	@property
 	def bootstrapLogger(self):
 		return logging.getLogger("{name}-bootstrap".format(name=self.name))
-	
+
 	def onLog(self, message, level, error=None):
 		"""This is called every time an entry is filed for logging."""
 		#self.logFile.append(message+"\n")
 		self.logFile.maintainRotation()
-	
+
 	def processMessage(self, message, errorInfo, prependPrefix=True):
 		"""Determines whether the message has to be processed in some way before logging and does that.
 		errorInfo is expected to be a tuple with three elements resulting from sys.exc_info()."""
 		processedMessage = message
 		if not errorInfo is None:
-			processedMessage = "\n".join([\
-				"\n#======================",\
-				message,\
-				"#======================",\
-				ErrorInfo(*errorInfo).asString,\
+			processedMessage = "\n".join([ \
+				"\n#======================", \
+				message, \
+				"#======================", \
+				ErrorInfo(*errorInfo).asString, \
 				"#======================"])
 		return processedMessage
-	
+
 	def debug(self, message, errorInfo=None):
 		self.logger.debug(self.processMessage(message, errorInfo))
 		self.onLog(message, logging.DEBUG, errorInfo)
-		
+
 	def info(self, message, errorInfo=None):
 		self.logger.info(self.processMessage(message, errorInfo))
 		self.onLog(message, logging.INFO, errorInfo)
-		
+
 	def warning(self, message, errorInfo=None):
 		self.logger.warning(self.processMessage(message, errorInfo))
 		self.onLog(message, logging.WARNING, errorInfo)
-		
+
 	def error(self, message, errorInfo=None):
 		self.logger.error(self.processMessage(message, errorInfo))
 		self.onLog(message, logging.ERROR, errorInfo)
-		
+
 	def critical(self, message, errorInfo=None):
 		self.logger.critical(self.processMessage(message, errorInfo))
-		
+
 		self.onLog(message, logging.CRITICAL, errorInfo)
-	
+
 	def setUpBootstrapLogger(self):
 		"""Will be used to handle errors that occur during the logging setup.
 		As '.setUp' might get subclassed and no console logger might get configured,
@@ -1298,14 +1293,14 @@ class Log(object, metaclass=Singleton):
 		bootstrapLoggingHandler = logging.StreamHandler()
 		bootstrapLoggingHandler.setLevel(logging.DEBUG)
 		self.bootstrapLogger.addHandler(bootstrapLoggingHandler)
-	
+
 	def setUp(self):
 		"""Sets up mnchecker logging."""
 		self.logger.setLevel(self.logLevel)
 		self.setUpConsoleLogger()
 		if self.logFile:
 			self.setUpFileLogger()
-			
+
 	def setUpConsoleLogger(self):
 		"""Sets up console logging functionality."""
 		consoleLoggingHandler = logging.StreamHandler()
@@ -1314,40 +1309,40 @@ class Log(object, metaclass=Singleton):
 			consoleLoggingHandler.setFormatter(logging.Formatter(self.consoleLogFormat))
 		self.logger.addHandler(consoleLoggingHandler)
 		return True
-		
+
 	def setUpFileLogger(self):
 		"""Sets up file logging functionality."""
-		
+
 		#NOTE: This code is definitely insufficiently tested. Outdated elements quoted out for now.
 		#TODO: Properly raise/re-raise appropriate error here for "catch all" symbiosis.
-		
+
 		#try: # Make sure the file either exists, or the script continues with a warning.
 		self.logFile.make(makeDirs=True)
 		#except (PermissionError, FileNotFoundError, OSError) as error:
-			#self.bootstrapLogger.warn(_string_fileLoggingCouldntBeInitialized_\
-				#.format(errorName=sys.exc_info()[0],\
-				#errorMessage=sys.exc_info()[1],\
-				#traceback=traceback.format_tb(sys.exc_info()[2])))
-			#return False
+		#self.bootstrapLogger.warn(_string_fileLoggingCouldntBeInitialized_\
+		#.format(errorName=sys.exc_info()[0],\
+		#errorMessage=sys.exc_info()[1],\
+		#traceback=traceback.format_tb(sys.exc_info()[2])))
+		#return False
 		fileLoggingHandler = logging.handlers.WatchedFileHandler(self.logFile.path)
 		fileLoggingHandler.setLevel(self.fileLogLevel)
 		if self.fileLogFormat:
 			fileLoggingHandler.setFormatter(logging.Formatter(self.fileLogFormat))
 		self.logger.addHandler(fileLoggingHandler)
-		
+
 	def setUpFileLoggerB(self):
 		"""An Experiment: Implement your own file logger to solve the weirdness."""
 		self.logFile.make(makeDirs=True)
-		
+
 #==========================================================
 class CrontabEntry(object):
-	
+
 	#=============================
 	"""Represents a crontab entry, formed from the specified arguments and template string."""
 	#=============================
-	
-	def __init__(self, currencyCliBin, currencyDaemonBin, currencyConf, currencyDataDir,\
-		minute="*", hour="*", dayOfTheMonth="*", month="*", dayOfTheWeek="*"):
+
+	def __init__(self, currencyCliBin, currencyDaemonBin, currencyConf, currencyDataDir, \
+				 minute="*", hour="*", dayOfTheMonth="*", month="*", dayOfTheWeek="*"):
 		# Mnchecker related bits.
 		self.currencyCliBin = currencyCliBin
 		self.currencyDaemonBin = currencyDaemonBin
@@ -1359,7 +1354,7 @@ class CrontabEntry(object):
 		self.dayOfTheMonth = dayOfTheMonth
 		self.month = month
 		self.dayOfTheWeek = dayOfTheWeek
-		
+
 	def get(self, crontabLineTemplate, confBitTemplate, timingTemplate):
 		# "{crontabTiming} {mncheckerPath} {cliBinPath} {daemonBinPath} {dataDirPath} {confBit}"
 		# "--currency-conf={currencyConf}"
@@ -1368,21 +1363,21 @@ class CrontabEntry(object):
 			confBit = defaultCrontabConfBitTemplate.format(currencyConf=self.currencyConf)
 		else:
 			confBit = ""
-		crontabTiming = defaultCrontabTimingTemplate.format(\
-			minute=self.minute,\
-			hour=self.hour,\
-			dayOfTheMonth=self.dayOfTheMonth,\
-			month=self.month,\
+		crontabTiming = defaultCrontabTimingTemplate.format( \
+			minute=self.minute, \
+			hour=self.hour, \
+			dayOfTheMonth=self.dayOfTheMonth, \
+			month=self.month, \
 			dayOfTheWeek=self.dayOfTheWeek)
-		crontabLine = crontabLineTemplate.format(\
-			crontabTiming=crontabTiming,\
-			mncheckerPath=os.path.abspath(sys.argv[0]),\
-			cliBinPath=self.currencyCliBin,\
-			daemonBinPath=self.currencyDaemonBin,\
-			dataDirPath=self.currencyDataDir,\
+		crontabLine = crontabLineTemplate.format( \
+			crontabTiming=crontabTiming, \
+			mncheckerPath=os.path.abspath(sys.argv[0]), \
+			cliBinPath=self.currencyCliBin, \
+			daemonBinPath=self.currencyDaemonBin, \
+			dataDirPath=self.currencyDataDir, \
 			confBit=confBit)
 		return crontabLine
-		
+
 
 #==========================================================
 class CrontabSetup(object):
@@ -1391,31 +1386,31 @@ class CrontabSetup(object):
 	"""Represents a crontab setup.
 	Setups are matched and created using the specified template string."""
 	#=============================
-	
+
 	def __init__(self, crontabLineTemplate):
 		self.crontabLineTemplate = crontabLineTemplate
-		
+
 	def overwriteEntryWith(self, newEntry):
 		"""The standard method to write a new entry.
 		Either overwrites the existing entry or creates a new one if none exists yet."""
 		crontabLineString = newEntry.get(self.crontabLineTemplate)
 		self.writeCrontabLine(crontabLineString)
-		
+
 	def writeCrontabLine(self, crontabLineString):
 		pass#TODO
 
 #==========================================================
 class InfoElement(object):
-	
+
 	#=============================
 	"""The generic information element for the "Info" class. Designed to be subclassed for
 	more specific items with particular checking requirements."""
 	#=============================
-	
+
 	def __init__(self, data, description):
 		self.description = description
 		self.data = data
-		
+
 	@property
 	def hasProblems(self):
 		"""Checks the data in some way and returns either True or False."""
@@ -1423,11 +1418,11 @@ class InfoElement(object):
 
 #==========================================================
 class FilePathInfoElement(InfoElement):
-	
+
 	#=============================
 	"""An information element for the "Info" class. Has no problems if the file exists."""
 	#=============================
-	
+
 	@property
 	def hasProblems(self):
 		"""Returns True if the file doesn't exist."""
@@ -1437,11 +1432,11 @@ class FilePathInfoElement(InfoElement):
 
 #==========================================================
 class ExecutableInfoElement(FilePathInfoElement):
-	
+
 	#=============================
 	"""An information element for the "Info" class. Has no problems if the file exists or is in PATH."""
 	#=============================
-	
+
 	@property
 	def hasProblems(self):
 		"""Returns true if the file doesn't exist (parent method returns True) and isn't in PATH."""
@@ -1454,11 +1449,11 @@ class ExecutableInfoElement(FilePathInfoElement):
 
 #==========================================================
 class CurrencyConfInfoElement(FilePathInfoElement):
-	
+
 	#=============================
 	"""An information element for the "Info" class for the currency config."""
 	#=============================
-	
+
 	@property
 	def hasProblems(self):
 		"""Checks the sanity of the conf file argument."""
@@ -1469,62 +1464,62 @@ class CurrencyConfInfoElement(FilePathInfoElement):
 
 #==========================================================
 class CrontabEntryInfoElement(InfoElement):
-	
+
 	#=============================
 	"""An information element for the "Info" class. Represents the to-use crontab entry.
 	Takes a CrontabEntry object."""
 	#=============================
-	
+
 	def __init__(self, crontabEntry, description):
-		data = entryString = crontabEntry.get(defaultCrontabLineTemplate,\
-			defaultCrontabConfBitTemplate,\
-			defaultCrontabTimingTemplate)
+		data = entryString = crontabEntry.get(defaultCrontabLineTemplate, \
+											  defaultCrontabConfBitTemplate, \
+											  defaultCrontabTimingTemplate)
 		super().__init__(data, description)
 
 #==========================================================
 class Info(object):
-	
+
 	#=============================
 	"""Represents information about mnchecker's state with the specified arguments."""
 	#=============================
-	
+
 	def __init__(self, args):
 		self.elements = []
-		self.elements.append(InfoElement(args.currency_handle,\
-			"Handle (--currency-handle)"))
-		self.elements.append(ExecutableInfoElement(args.currency_bin_cli,\
-			"Controller executable (--currency-bin-cli)"))
-		self.elements.append(ExecutableInfoElement(args.currency_bin_daemon,\
-			"Daemon executable (--currency-bin-daemon)"))
-		self.elements.append(FilePathInfoElement(args.currency_datadir,\
-			"Datadir (--currency-datadir)"))
-		self.elements.append(CurrencyConfInfoElement(args.currency_conf,\
-			"Configuration file (--currency-conf): If it says \"None\", that means it'll use the default"))
-		self.elements.append(InfoElement(args.threshold,\
-			"Max. block discrepancy before reindex (--threshold)"))
-		self.elements.append(InfoElement(args.overshot_threshold,\
-			"Overshot threshold (max block count the explorer may be ahead) (--overshot-threshold)"))
-		self.elements.append(FilePathInfoElement(args.log_dir,\
-			"Directory where the logs are stored (--log-dir)"))
-		self.elements.append(InfoElement(args.log_level,\
-			"Log level (--log-level)"))
-		self.elements.append(InfoElement(args.block_count_url,\
-			"Block count URL (--block-count-url)"))
-		self.elements.append(InfoElement(args.block_count_user_agent,\
-			"Block count user agent (for block count URL). \"None\" is fine (will use urllib default) (--block-count-user-agent)"))
-		self.elements.append(CrontabEntryInfoElement(\
-			CrontabEntry(\
-				currencyCliBin=args.currency_bin_cli,\
-				currencyDaemonBin=args.currency_bin_daemon,\
-				currencyConf=args.currency_conf,\
-				currencyDataDir=args.currency_datadir,\
+		self.elements.append(InfoElement(args.currency_handle, \
+										 "Handle (--currency-handle)"))
+		self.elements.append(ExecutableInfoElement(args.currency_bin_cli, \
+												   "Controller executable (--currency-bin-cli)"))
+		self.elements.append(ExecutableInfoElement(args.currency_bin_daemon, \
+												   "Daemon executable (--currency-bin-daemon)"))
+		self.elements.append(FilePathInfoElement(args.currency_datadir, \
+												 "Datadir (--currency-datadir)"))
+		self.elements.append(CurrencyConfInfoElement(args.currency_conf, \
+													 "Configuration file (--currency-conf): If it says \"None\", that means it'll use the default"))
+		self.elements.append(InfoElement(args.threshold, \
+										 "Max. block discrepancy before reindex (--threshold)"))
+		self.elements.append(InfoElement(args.overshot_threshold, \
+										 "Overshot threshold (max block count the explorer may be ahead) (--overshot-threshold)"))
+		self.elements.append(FilePathInfoElement(args.log_dir, \
+												 "Directory where the logs are stored (--log-dir)"))
+		self.elements.append(InfoElement(args.log_level, \
+										 "Log level (--log-level)"))
+		self.elements.append(InfoElement(args.block_count_url, \
+										 "Block count URL (--block-count-url)"))
+		self.elements.append(InfoElement(args.block_count_user_agent, \
+										 "Block count user agent (for block count URL). \"None\" is fine (will use urllib default) (--block-count-user-agent)"))
+		self.elements.append(CrontabEntryInfoElement( \
+			CrontabEntry( \
+				currencyCliBin=args.currency_bin_cli, \
+				currencyDaemonBin=args.currency_bin_daemon, \
+				currencyConf=args.currency_conf, \
+				currencyDataDir=args.currency_datadir, \
 				#TODO: Code duplication alarm.
-				minute="*/{minute}".format(minute=crontabRandomMinute(\
-						defaultCrontabRandomMinuteFloor,\
-						defaultCrontabRandomMinuteCeiling))
-			),\
+				minute="*/{minute}".format(minute=crontabRandomMinute( \
+					defaultCrontabRandomMinuteFloor, \
+					defaultCrontabRandomMinuteCeiling))
+			), \
 			"A crontab entry you can add using \"crontab -e\" for mnchecker to be executed regularly"))
-		
+
 	@property
 	def string(self):
 		infoStrings = ["Command line used:\n\t"+" ".join(sys.argv)]
@@ -1537,9 +1532,9 @@ class Info(object):
 					hasProblemsString = "\n\tProblems detected: [Yes]"
 				else:
 					hasProblemsString = "\n\tProblems detected: [No]"
-			infoStrings.append("{description}:{checkResult}\n\tValue: {data}".format(\
-				description=infoElement.description,\
-				data=infoElement.data,\
+			infoStrings.append("{description}:{checkResult}\n\tValue: {data}".format( \
+				description=infoElement.description, \
+				data=infoElement.data, \
 				checkResult=hasProblemsString))
 		return "\n".join(infoStrings)
 
@@ -1556,76 +1551,76 @@ if __name__ == "__main__":
 
 	#=============================
 	# --info
-	argumentParser.add_argument("-i", "--info", action="store_true",\
-		help="Shows information about the setup. Doesn't run checking functionality.")
+	argumentParser.add_argument("-i", "--info", action="store_true", \
+								help="Shows information about the setup. Doesn't run checking functionality.")
 	#=============================
 	# --gen-crontab
 	#TODO: Functionality not yet properly implemented.
-	argumentParser.add_argument("-g", "--gen-crontab", action="store_true",\
-		help="Generates and displays a crontab line you can add using \"crontab -e\" to run mnchecker regularly. "\
-			"Keep in mind that it's all one line, even if your terminal might have wrapped it to be multiple lines.")
+	argumentParser.add_argument("-g", "--gen-crontab", action="store_true", \
+								help="Generates and displays a crontab line you can add using \"crontab -e\" to run mnchecker regularly. " \
+									 "Keep in mind that it's all one line, even if your terminal might have wrapped it to be multiple lines.")
 	#=============================
 	# --currency-handle
 	# Currency handle/name/symbol (this is dependent on what the explorer wants to see).
-	argumentParser.add_argument("-n", "--currency-handle", default=defaultCurrencyHandle,\
-		help="Symbol or name of the currency in question. Depends on the explorer used. Default: {default}".\
-		format(default=defaultCurrencyHandle))
+	argumentParser.add_argument("-n", "--currency-handle", default=defaultCurrencyHandle, \
+								help="Symbol or name of the currency in question. Depends on the explorer used. Default: {default}". \
+								format(default=defaultCurrencyHandle))
 	#=============================
 	# --currency-bin-cli
-	argumentParser.add_argument("-b", "--currency-bin-cli",default=defaultCliBin,\
-		help="Command line wallet binary path. Default: {default}".\
-		format(default=defaultCliBin))
+	argumentParser.add_argument("-b", "--currency-bin-cli",default=defaultCliBin, \
+								help="Command line wallet binary path. Default: {default}". \
+								format(default=defaultCliBin))
 	#=============================
 	# --currency-bin-daemon
-	argumentParser.add_argument("-e", "--currency-bin-daemon", default=defaultDaemonBin,\
-		help="Daemon binary path. Default: {default}".\
-		format(default=defaultDaemonBin))
+	argumentParser.add_argument("-e", "--currency-bin-daemon", default=defaultDaemonBin, \
+								help="Daemon binary path. Default: {default}". \
+								format(default=defaultDaemonBin))
 	#=============================
 	# --currency-datadir
-	argumentParser.add_argument("-d", "--currency-datadir", default=defaultDataDir,\
-		help="Datadir used for this particular wallet instance. Default: {default}".\
-		format(default=defaultDataDir))
+	argumentParser.add_argument("-d", "--currency-datadir", default=defaultDataDir, \
+								help="Datadir used for this particular wallet instance. Default: {default}". \
+								format(default=defaultDataDir))
 	#=============================
 	# --currency-conf
-	argumentParser.add_argument("-c", "--currency-conf",\
-		help="Path of the wallet's configuration file. If not specified, it will not be used.")
+	argumentParser.add_argument("-c", "--currency-conf", \
+								help="Path of the wallet's configuration file. If not specified, it will not be used.")
 	#=============================
 	# --threshold
-	argumentParser.add_argument("-t", "--threshold", default=defaultThreshold,\
-		help="Maximum difference between explorer and wallet block count that is considered healthy\
+	argumentParser.add_argument("-t", "--threshold", default=defaultThreshold, \
+								help="Maximum difference between explorer and wallet block count that is considered healthy\
 		and won't trigger the fix. Default value: {default}. Increase for very new coins and decrease\
-		for mature ones.".\
-		format(default=defaultThreshold))
+		for mature ones.". \
+								format(default=defaultThreshold))
 	#=============================
 	# --overshot-threshold
-	argumentParser.add_argument("-o", "--overshot-threshold", default=defaultOvershotThreshold,\
-		help="Number of blocks the wallet block count may be ahead of the explorer block count\
+	argumentParser.add_argument("-o", "--overshot-threshold", default=defaultOvershotThreshold, \
+								help="Number of blocks the wallet block count may be ahead of the explorer block count\
 		for the situation to be considered sane. Increase for very new coins and decrease for mature ones.\
-		Default: {default}".\
-		format(default=defaultOvershotThreshold))
+		Default: {default}". \
+								format(default=defaultOvershotThreshold))
 	#=============================
 	# --log-dir
-	argumentParser.add_argument("-l", "--log-dir", default=defaultLogDirPath,\
-		help="Path to the log directory. Default value: {default}.".\
-		format(default=defaultLogDirPath))
+	argumentParser.add_argument("-l", "--log-dir", default=defaultLogDirPath, \
+								help="Path to the log directory. Default value: {default}.". \
+								format(default=defaultLogDirPath))
 	#=============================
 	# --log-level
-	argumentParser.add_argument("--log-level", default=defaultLogLevel,\
-		help="How verbose you want the script to be with its output.\
+	argumentParser.add_argument("--log-level", default=defaultLogLevel, \
+								help="How verbose you want the script to be with its output.\
 		Any log entry flagged lower than the specified level will NOT be logged.\
 		Default value: {default}.\
 		Choose one of the following numbers to configure the desired log level:\
-		DEBUG: 10, INFO: 20, WARNING: 30, ERROR: 40, CRITICAL: 50".\
-		format(default=defaultLogLevel))
+		DEBUG: 10, INFO: 20, WARNING: 30, ERROR: 40, CRITICAL: 50". \
+								format(default=defaultLogLevel))
 	#=============================
 	# --block-count-url
-	argumentParser.add_argument("--block-count-url", default=None,\
-		help="URL to get the reference block count from. This overrides any block explorer values\
+	argumentParser.add_argument("--block-count-url", default=None, \
+								help="URL to get the reference block count from. This overrides any block explorer values\
 		that might be configured elsewhere.")
 	#=============================
 	# --block-count-user-agent
-	argumentParser.add_argument("--block-count-user-agent", default=defaultBlockExplorerBlockCountUserAgent,\
-		help="In case the configured explorer doesn't work with urllib's default user agent, you can\
+	argumentParser.add_argument("--block-count-user-agent", default=defaultBlockExplorerBlockCountUserAgent, \
+								help="In case the configured explorer doesn't work with urllib's default user agent, you can\
 		specify a custom one here.")
 	args = argumentParser.parse_args()
 
@@ -1634,12 +1629,12 @@ if __name__ == "__main__":
 	#=======================================================================================
 
 	# Assemble the log file path.
-	logFilePath = os.path.join(args.log_dir,\
-		logFileNameFormat.format(currencyHandle=args.currency_handle, currencyDataDir=\
-			args.currency_datadir.replace(os.sep, "-"), ending=logFileEnding))
+	logFilePath = os.path.join(args.log_dir, \
+							   logFileNameFormat.format(currencyHandle=args.currency_handle, currencyDataDir= \
+								   args.currency_datadir.replace(os.sep, "-"), ending=logFileEnding))
 	# Initialize the logging object.
-	Log("mnchecker", filePath=logFilePath, logFormat=defaultLogFormat,\
-		consoleLogFormat=defaultConsoleLogFormat, fileLogFormat=defaultFileLogFormat,\
+	Log("mnchecker", filePath=logFilePath, logFormat=defaultLogFormat, \
+		consoleLogFormat=defaultConsoleLogFormat, fileLogFormat=defaultFileLogFormat, \
 		logLevel=args.log_level, consoleLogLevel=logging.INFO)
 
 	#=======================================================================================
@@ -1649,19 +1644,19 @@ if __name__ == "__main__":
 	if not args.info and not args.gen_crontab:
 		Log("mnchecker").info(_string_logStart.format(date=datetime.datetime.now()))
 		try:
-			BlockCountHealth(\
-				Wallet(Currency(args.currency_handle),\
-				shutil.which(args.currency_bin_cli),\
-				shutil.which(args.currency_bin_daemon),\
-				args.currency_conf,\
-				args.currency_datadir),\
-				BlockExplorerByWebApi(\
-					url=BlockExplorerBlockCountUrl(\
-						urlTemplate=defaultBlockExplorerBlockCountUrlTemplate,\
-						currencyHandle=args.currency_handle,\
-						completeUrl=args.block_count_url).url,\
-					userAgent=args.block_count_user_agent),\
-				threshold=args.threshold,\
+			BlockCountHealth( \
+				Wallet(Currency(args.currency_handle), \
+					   shutil.which(args.currency_bin_cli), \
+					   shutil.which(args.currency_bin_daemon), \
+					   args.currency_conf, \
+					   args.currency_datadir), \
+				BlockExplorerByWebApi( \
+					url=BlockExplorerBlockCountUrl( \
+						urlTemplate=defaultBlockExplorerBlockCountUrlTemplate, \
+						currencyHandle=args.currency_handle, \
+						completeUrl=args.block_count_url).url, \
+					userAgent=args.block_count_user_agent), \
+				threshold=args.threshold, \
 				overshotThreshold=args.overshot_threshold).maintain()
 		#=============================
 		# This is the "catch all" error logging procedure mentioned in other areas of the code.
@@ -1669,9 +1664,9 @@ if __name__ == "__main__":
 		# exploded, even if it's an unexpected failure.
 		# Errors should be written to harmonize with this, in order to avoid messy error logs.
 		except Exception as error:
-			Log("mnchecker").critical("Mnchecker has encountered a fatal error:",\
-				sys.exc_info())
-			#raise error
+			Log("mnchecker").critical("Mnchecker has encountered a fatal error:", \
+									  sys.exc_info())
+		#raise error
 		Log("mnchecker").info(_string_logEnd.format(date=datetime.datetime.now()))
 	else:
 		if args.info:
@@ -1679,19 +1674,19 @@ if __name__ == "__main__":
 		#=============================
 		# Process: --gen-crontab
 		if args.gen_crontab:
-			print(CrontabEntry(\
-					currencyCliBin=args.currency_bin_cli,\
-					currencyDaemonBin=args.currency_bin_daemon,\
-					currencyConf=args.currency_conf,\
-					currencyDataDir=args.currency_datadir,\
-					#TODO: Code duplication alarm.
-					minute="*/{minute}".format(minute=crontabRandomMinute(\
-						defaultCrontabRandomMinuteFloor,\
-						defaultCrontabRandomMinuteCeiling))
-				).get(\
-					defaultCrontabLineTemplate,\
-					defaultCrontabConfBitTemplate,\
-					defaultCrontabTimingTemplate)
-				)
+			print(CrontabEntry( \
+				currencyCliBin=args.currency_bin_cli, \
+				currencyDaemonBin=args.currency_bin_daemon, \
+				currencyConf=args.currency_conf, \
+				currencyDataDir=args.currency_datadir, \
+				#TODO: Code duplication alarm.
+				minute="*/{minute}".format(minute=crontabRandomMinute( \
+					defaultCrontabRandomMinuteFloor, \
+					defaultCrontabRandomMinuteCeiling))
+			).get( \
+				defaultCrontabLineTemplate, \
+				defaultCrontabConfBitTemplate, \
+				defaultCrontabTimingTemplate)
+			)
 	# Test
 	sys.exit(0)
